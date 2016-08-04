@@ -1,0 +1,11 @@
+from ggplot import *
+import pandas as pd
+import io
+import requests
+url = "https://s3.amazonaws.com/content.udacity-data.com/courses/ud359/hr_year.csv"
+s = requests.get(url).content
+bbdata = pd.read_csv(io.StringIO(s.decode('utf-8')))
+print(bbdata.yearID[:5],bbdata.HR[:5])
+p = ggplot(bbdata, aes(x = 'yearID',y = 'HR'))+geom_point(color='red') + \
+    geom_line(alpha=0.25,color = 'red')
+print(p)
