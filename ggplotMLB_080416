@@ -9,3 +9,15 @@ print(bbdata.yearID[:5],bbdata.HR[:5])
 p = ggplot(bbdata, aes(x = 'yearID',y = 'HR'))+geom_point(color='red') + \
     geom_line(alpha=0.25,color = 'red')
 print(p)
+
+
+"""
+with teamID
+"""
+url = "https://s3.amazonaws.com/content.udacity-data.com/courses/ud359/hr_by_team_year_sf_la.csv"
+s = requests.get(url).content
+bbdata = pd.read_csv(io.StringIO(s.decode('utf-8')))
+print(bbdata.yearID[:5],bbdata.HR[:5])
+p = ggplot(bbdata, aes(x = 'yearID',y = 'HR',color = 'teamID')) + geom_point()+\
+    geom_line()+ggtitle('Total HRs by Year')+xlab('Year')+ylab('HR')
+print(p)
