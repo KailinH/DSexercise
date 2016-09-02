@@ -1,0 +1,31 @@
+"""
+data munging for dengue disease data so they are in a consistent format
+"""
+def getDate(df):
+"""
+input: df, dataframe, where original date is in yyyy/mm/dd format
+return augmented dataframe with date in yyyy-mm-dd format
+"""
+    df['Date'] = ""
+    Date = []
+    for d in df['week_start_date']:
+        l = d.strip().split('/')
+        Date.append(l)
+    df['Date'] = pd.Series(Date)
+    return df
+
+def dateTemp(df):
+"""
+input: df, dataframe, where the yyyy, mm, dd info are in separate columns
+return augmented dataframe with date in yyyy-mm-dd format
+"""
+    Date = []
+    yr = df['YYYY']
+    mn = df['MM']
+    day = df['DD']
+    for y,m,d in zip(yr,mn,day):
+        ymd = str(y)+'-'+str(m)+'-'+str(d)
+        Date.append(ymd)
+    assert len(Date)==len(yr)
+    df['Date'] = pd.Series(Date)
+    return df
