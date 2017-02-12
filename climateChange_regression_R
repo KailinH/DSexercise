@@ -1,0 +1,27 @@
+"""
+Predict climate change with regression in R
+Data & source: https://courses.edx.org/courses/course-v1:MITx+15.071x_3+1T2016/courseware/f8d71d64418146f18a066d7f0379678c/60d93a44280348d7a0a16663f92af0f7/
+"""
+climate_change = read.csv("/Users/kailinh/Documents/analytics_edge/climate_change.csv")
+str(climate_change)
+training_set = subset(climate_change, Year < 2007 )
+test_set = subset(climate_change, Year > 2006 )
+plot(climate_change$Year, climate_change$Temp)
+CliReg = lm(Temp ~ MEI + CO2 + CH4 + N2O + CFC.11 + CFC.12 + TSI + Aerosols, data = training_set)
+summary(CliReg)
+cor(climate_change,method="pearson") # check the correlation among variables
+# reduce the model after considering correlation
+CliReg_reduced = lm(Temp ~ MEI + N2O + TSI + Aerosols, data = training_set)
+summary(CliReg_reduced)
+# automatically find a good compromise of model simplicity and R^2(AIC)
+# step function does not address the collinearity of the variables
+new_CliReg = step(CliReg)
+summary(new_CliReg)
+
+# predict test data
+tempPredict = predict(new_CliReg, test_set)
+# test set R^2
+SSE = sum((tempPredict - test_set$Temp)^2)
+SST = sum((mean(training_set$Temp) - test_set$Temp)^2)
+R2 = 1 - SSE/SST
+R2 #R^2 = 0.6286 slighly decreasing
