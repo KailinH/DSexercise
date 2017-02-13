@@ -1,0 +1,36 @@
+"""
+Predict whether a parole would violate the term, logistic regression in R
+Soure:https://courses.edx.org/courses/course-v1:MITx+15.071x_3+1T2016/courseware/5893e4c5afb74898b8e7d9773e918208/26c038071b0743e99651501cb5a050dd/?child=first
+"""
+
+### predict paroles violators ###
+parole = read.csv("/Users/kailinh/Documents/analytics_edge/parole.csv")
+nrow(parole)
+str(parole)
+table(parole$violator)
+parole$state = as.factor(parole$state)
+parole$crime = as.factor(parole$crime)
+parole$race = as.factor(parole$race)
+summary(parole$crime)
+
+# split training and testing data
+set.seed(144)
+library(caTools)
+split = sample.split(parole$violator, SplitRatio = 0.7)
+train = subset(parole, split == TRUE)
+test = subset(parole, split == FALSE)
+
+# building model
+paroleLog = glm(violator~.,data=train, family=binomial)
+summary(paroleLog)
+# as coefficient of multiple.offense is 1.61, e^1,61 = 5.01, so they are 5.01 more likely to violate paroles
+
+#evaluate model on testing set
+predictTest = predict(paroleLog, type="response", newdata=test)
+which.max(predictTest)
+summary(predictTest)
+table(test$violator, predictTest >= 0.5)
+table(test$violator)
+
+ROCRpred = prediction(predictTest, test$violator)
+as.numeric(performance(ROCRpred, "auc")@y.values) # 0.89, not bad!
