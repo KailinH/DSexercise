@@ -1,0 +1,53 @@
+"""
+using logistic regression to predict the popularity of music record in R
+source:https://courses.edx.org/courses/course-v1:MITx+15.071x_3+1T2016/courseware/5893e4c5afb74898b8e7d9773e918208/26c038071b0743e99651501cb5a050dd/?child=first
+"""
+###popularity of music records###
+songs = read.csv("/Users/kailinh/Documents/analytics_edge/songs.csv")
+str(songs)
+table(songs$year)
+nrow(subset(songs, songs$artistname == 'Michael Jackson')) # how many songs are by MJ
+subset(songs, songs$artistname == 'Michael Jackson' & songs$Top10 == 1) # songs by MJ that also made top10
+table(songs$timesignature)
+summary(songs$tempo)
+#find the songs with highest tempo
+subset(songs, songs$tempo == '244.30')
+which.max(songs$tempo)
+songs$songtitle[6206]
+# split traing and testing data
+SongsTrain = subset(songs, songs$year < 2010)
+SongsTest = subset(songs, songs$year > 2009)
+subset_2010 = subset(SongsTest, SongsTest$year == 2010)
+nrow(subset_2010)
+nrow(SongsTrain)
+# building model
+nonvars = c("year", "songtitle", "artistname", "songID", "artistID")
+SongsTrain = SongsTrain[ , !(names(SongsTrain) %in% nonvars) ]
+SongsTest = SongsTest[ , !(names(SongsTest) %in% nonvars) ] # remove nonvariables from data
+
+mod1 = glm(Top10~.,data=SongsTrain, family=binomial)
+summary(mod1)
+# looks like mainstream listeners tend to prefer less complex songs
+cor(SongsTrain$loudness, SongsTrain$energy) # coorelation between loudness and energy
+
+# adjust our model
+mod2 = glm(Top10 ~ . - loudness, data=SongsTrain, family=binomial) # for removing numeric variables, not for non-numeric though
+summary(mod2)
+
+mod3 = glm(Top10 ~ . - energy, data=SongsTrain, family=binomial)
+summary(mod3)
+
+# predict with model 3
+predictTest = predict(mod3, type="response", newdata=SongsTest)
+# Confusion matrix with threshold of 0.5
+table(SongsTest$Top10, predictTest > 0.45) #overall accuracy 0.8793
+
+# test set AUC
+ROCRpred = prediction(predictTest, SongsTest$Top10)
+as.numeric(performance(ROCRpred, "auc")@y.values) # 0.8489 pretty good
+
+#model validation
+table(SongsTest$Top10) # bsdrlinr accuracy for not making top 10 314/(314+59) = 0.84182306
+subset_2010= subset(SongsTest$)
+table(subset_2010$Top10, predictTest > 0.45)
+# with sensitivity 0.322 and specificity 0.9841, our model is conservative from the POV of investment
