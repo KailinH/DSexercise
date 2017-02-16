@@ -1,0 +1,63 @@
+"""
+Source:https://courses.edx.org/courses/course-v1:MITx+15.071x_3+1T2016/courseware/3372864201764d6d9f63931920e5152e/ab08d73980f046479d3bcd105a55b0c2/
+multiclass classification with classification tree and random forest
+"""
+rm(list=ls(all=TRUE))
+# Read in the data
+letters = read.csv("/Users/kailinh/Documents/analytics_edge/letters_ABPR.csv")
+str(letters)
+letters$isB = as.factor(letters$letter == "B") # create a new variable, takes values 'True' or 'False'
+
+#Baseline accuracy
+table(letters$isB)
+766/(766+2350) #0.245828
+#Split data set
+library(caTools)
+set.seed(1000)
+spl = sample.split(letters$isB, SplitRatio = 0.5)
+Train = subset(letters, spl==TRUE)
+Test = subset(letters, spl==FALSE)
+table(Test$isB)
+1175/(1175+383)
+
+#Build classification tree
+CARTb = rpart(isB ~ . - letter, data=Train, method="class") #remove variable 'letter'
+# Make predictions
+PredictCART = predict(CARTb, newdata = Test, type = "class")
+table(Test$isB, PredictCART)
+(1118+340)/(1118+340+100) #overall accuracy 0.9358151
+
+#Build a random forest model
+set.seed(1000)
+library(randomForest)
+lettersForest = randomForest(isB ~ . - letter, data = Train)
+# Make predictions
+PredictForest = predict(lettersForest, newdata = Test)
+table(Test$isB, PredictForest)
+(1165+374)/(1165+374+19) #overall accuracy 0.9878049
+
+#Transition to multiclass part
+letters$letter = as.factor( letters$letter) #convert to factor
+#generate new training and test set
+set.seed(2000)
+spl = sample.split(letters$letter, SplitRatio = 0.5)
+Train = subset(letters, spl==TRUE)
+Test = subset(letters, spl==FALSE)
+table(Test$letter) #baseline frequency
+401/(395+383+401+379)
+#Build a classification tree
+CARTb = rpart(letter ~ . - isB, data=Train, method="class") #remove variable 'isB'
+# Make predictions
+PredictCART = predict(CARTb, newdata = Test, type = "class")
+table(Test$letter, PredictCART)
+(348+318+363+340)/nrow(Test) #Test set accuracy 0.8786906
+
+#Build a random forest model
+lettersForest = randomForest(letter ~ . - isB, data = Train)
+# Make predictions
+PredictForest = predict(lettersForest, newdata = Test)
+table(Test$letter, PredictForest)
+(390+380+393+369)/nrow(Test) #overall accuracy 0.9833119
+# The accuracy of classification tree decreased significantly as we transitioned from the problem 
+#of predicting B/not B (a simpler problem) to the problem of predicting the four letters
+#while the accuracy of the random forest model decreased by a tiny amount.
