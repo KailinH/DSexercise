@@ -1,0 +1,105 @@
+"""
+Given a body of tweets with labels indicating whether it's health related or not,
+engineered useful features such as lemmatized tweets, health terms and hashtags
+then train binary NLP classifiers such as Naive Bayes and decision trees
+Python 
+"""
+%reset -f
+# Read in data
+import pandas as pd
+import numpy as np
+import nltk
+tw_df = pd.read_table('/Users/kailinh/Dropbox/NotebooksRead/Resources/tweets_health_5K_labeled.csv', delimiter = ',')
+tw_df = tw_df[['Label', 'Text']]
+
+# Prepare tokenization and lemmatization
+from nltk.tokenize import TweetTokenizer
+from nltk.stem import WordNetLemmatizer
+from nltk import pos_tag
+from nltk.corpus import wordnet
+stop = set(line.strip() for line in open('/Users/kailinh/Dropbox/NotebooksRead/Resources/stoplist_6_24_14.txt'))
+lemmatizer = WordNetLemmatizer()
+tokenizer = TweetTokenizer()
+import spacy
+nlp = spacy.load('en')
+
+def lemmatize(token,pos):
+    if pos == None:
+        return token
+    else:
+        return lemmatizer.lemmatize(token,pos)
+
+# Define health terms
+import csv
+health_terms = []
+with open('/Users/kailinh/Documents/health_terms.csv', 'r') as csvfile:
+     spamreader = csv.reader(csvfile, quotechar='|')
+     for row in spamreader:
+        if row is not None:
+             health_terms.append(row)
+
+# Created new features
+tokenized_tt = []
+lematized_tt = []
+hashtag_tt = []
+import string
+for i in range(len(tw_df)):
+    tokenized_tt.append(tokenizer.tokenize(tw_df.iloc[i,1]))
+    hashtag_tt.append(list(t[1:] for t in tokenized_tt[-1] if t[0] == '#'))
+    tokenized_tt[-1] = [t.lower() for t in tokenized_tt[-1] if 'http' not in t and t[0] != '@' and t[0] != '#']
+    tokenized_tt[-1] = [t for t in tokenized_tt[-1] if t not in stop and t not in string.punctuation]
+    
+    #lemmatization
+    tok = list(tokenized_tt[-1])
+    tags = pos_tag(tok)
+    pos = [get_wordnet_pos(p[1]) for p in tags]
+    lematized_tt.append(list(lemmatize(t,p) for t,p in zip(tok,pos)))
+
+    tokenized_tt[-1] = ', '.join(tokenized_tt[-1])
+    lematized_tt[-1] = ', '.join(lematized_tt[-1])
+    hashtag_tt[-1] = ', '.join(hashtag_tt[-1])
+tw_df['hashtag'] = tw_df['hashtag'].apply(lambda x: x.strip()).replace('', 'notag')
+
+hterm_count = []
+ht_occured = []
+import string
+for i in range(len(tw_df)):
+    count = 0
+    temp = []
+    for w in tw_df.iloc[i,3].split(','):
+        if w in hterm:
+            count += 1
+            temp.append(w)
+    hterm_count.append(count)
+    ht_occured.append(temp)
+    ht_occured[-1] = ', '.join(ht_occured[-1])
+tw_df['hterm_count'] = pd.Series(hterm_count)
+tw_df['ht_occured'] = pd.Series(ht_occured )
+
+# Prepare feature sets for classification
+featuresets = []
+for c in range(len(tw_df)):
+    current_item = ({'lematized': tw_df.iloc[c,3],'ht':tw_df.iloc[c,4],'hterm_count':tw_df.iloc[c,5], 'ht_occured':tw_df.iloc[c,6]},
+                    tw_df.iloc[c,0])
+    featuresets.append(current_item)
+ 
+# Train classifiers
+import random
+random.shuffle(featuresets)
+n = int(len(featuresets)/3)
+train_set, test_set = featuresets[n:], featuresets[:n]
+classifier = nltk.NaiveBayesClassifier.train(train_set) #Naive Bayes
+nltk.classify.accuracy(classifier, test_set) # check accuracy on test_set
+
+# Function to detect error
+def classifier_error(classifier, test_set):
+    errors = []
+    count = 0
+    for (f, tag) in test_set:
+        guess = classifier.classify(f)
+        if guess != tag:
+            if tag == 'Positive':
+                count += 1
+            errors.append( (tag, guess, f) )
+    print('how many positive and negative were misclassified respectively:', count, len(errors)-count)
+    return
