@@ -1,0 +1,50 @@
+"""
+in R
+Source: https://courses.edx.org/courses/course-v1:MITx+15.071x_3+1T2016/courseware/d32b0c36ff484c228b8117257349d0e6/27bfa0a7d1304080a09965a5773c16f3/
+Cluster political articles with hierarchical clustering and k-means clusterings
+"""
+rm(list=ls(all=TRUE))
+dailykos= read.csv("/Users/kailinh/Documents/analytics_edge/dailykos.csv") # contains header
+str(dailykos)
+distance = dist(dailykos, method = "euclidean")
+kosHierClust = hclust(distance, method="ward.D")
+# plot dendrogram
+plot(kosHierClust)
+# pick 7 clusters
+dailykosClusters = cutree(kosHierClust, k = 7)
+# see how many observations in each cluster
+table(dailykosClusters)
+
+#split data into 7 clusters
+HierCluster1 = subset(dailykos, dailykosClusters == 1)
+HierCluster2 = subset(dailykos, dailykosClusters == 2)
+HierCluster3 = subset(dailykos, dailykosClusters == 3)
+HierCluster4 = subset(dailykos, dailykosClusters == 4)
+HierCluster5 = subset(dailykos, dailykosClusters == 5) # cluster 5 related to Iraq war
+HierCluster6 = subset(dailykos, dailykosClusters == 6)
+HierCluster7 = subset(dailykos, dailykosClusters == 7)
+
+# top 6 most frequent words
+tail(sort(colMeans(HierCluster1)))
+tail(sort(colMeans(HierCluster2)))
+tail(sort(colMeans(HierCluster3)))
+tail(sort(colMeans(HierCluster4)))
+tail(sort(colMeans(HierCluster5)))
+tail(sort(colMeans(HierCluster6)))
+tail(sort(colMeans(HierCluster7)))
+
+# K-means clustering
+set.seed(1000)
+KMC = kmeans(dailykos, centers = 7)
+str(KMC)
+# Extract clusters
+dailykosClusters = KMC$cluster
+table(dailykosClusters)
+#  output the six most frequent words in each cluster
+i<-1
+while(i <= 7){
+  temp = subset(dailykos, dailykosClusters == i)
+  print(cat('cluster',i))
+  print(tail(sort(colMeans(temp))))
+  i=i+1
+}
