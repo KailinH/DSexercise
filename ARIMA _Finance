@@ -1,0 +1,28 @@
+"""
+ARIMA model for modeling finance data
+"""
+import pyflux as pf
+def arima_finance(all_c, ticker):
+"""
+A function to fit arima model to historic finance data
+inputs:
+  all_c: a dataframe of adjusted close prices of several stocks
+  ticker: a list of stock ticker symbol
+function provides summary of parameter fit, graphs and prediction for stock prices for the next five trading day
+"""
+    for i in range(len(ticker)):
+        model= pf.ARIMA(data=all_c.loc[:, ['Date', ticker[i]]],ar=20,ma=20,integ=0,target=ticker[i])
+        x_mle = model.fit("MLE") #maximum likelihood estimate
+        #print(x_mle.summary())
+        print('Overall Fit for :', ticker[i])
+        model.plot_fit(figsize=(15,5))
+        print('Rolling Prediction for:', ticker[i])
+        #rolling in-sample prediction to get an idea of performance
+        model.plot_predict_is(120,figsize=(15,5))
+        pred = model.predict(h=5)
+        y_true = np.array(all_c.loc[:, [ticker[i]]][-100:])
+        y_pred = np.array(model.predict_is(100))
+        print('mse:', calculate_mse(y_true, y_pred))
+        pred[ticker[i]] = exp_transform(pred[ticker[i]])
+        print('next five days predictions for', ticker[i], pred.values.reshape(len(pred), 1))
+      return
