@@ -1,0 +1,24 @@
+"""
+examples to use Python to connect to data base and execute sql statements
+"""
+import sqlite3
+# Fetch some student records from the database.
+db = sqlite3.connect("students")
+c = db.cursor()
+#order student name alphabetically
+query = "select name, id from students order by name;"
+c.execute(query)
+rows = c.fetchall()
+print "Row data:"
+print rows
+# And let's loop over it too:
+print
+print "Student names:"
+for row in rows:
+  print "  ", row[0]
+
+db = sqlite3.connect("testdb")
+c = db.cursor()
+c.execute("insert into balloons values ('blue', 'water') ")
+db.commit() #this step crucial to make sure that insertion is executed
+db.close() ##close the connection so no stale connections to take up resources
