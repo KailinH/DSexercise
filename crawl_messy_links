@@ -1,0 +1,38 @@
+## codes to crawl image links when the link is messy, contains multiple links, erroneous substrings, etc##
+import urllib
+
+def clean_link(im):
+    im = str(im)
+    im = im.replace('[','')
+    im = im.replace(']','')
+    im = im.replace('"','')
+    im = im.replace('\\','')
+    return im
+
+image = urllib.URLopener()
+count = 0
+first_crawl_error = []
+#image_feedback is dataframe, 'image' column contains links
+for im, ci in zip(image_feedback['image'],image_feedback['cat_id']) :
+    ci = int(ci)
+    if '"' in im: #make sure the link is not empty
+        if ',' in im: #when there are multiple links, which are seperated by ','
+            im = im.split(',')
+            for i in range(len(im)):
+                im[i] = clean_link(im[i])
+                print(i,im[i])
+                try:
+                    #save image where the name contains various information
+                    image.retrieve(im[i], image_folder+'/'+str(count)+'_'+str(ci)+'_'+str(i)+'.'+im[i][-3:])
+                except:
+                    print("Unexpected error:", sys.exc_info()[0],count)
+        else:
+            im = str(im)
+            im = clean_link(im)
+            print('single,',im)
+            try:
+                image.retrieve(im, image_folder+'/'+str(count)+'_'+str(ci)+'.'+im[-3:])
+            except:
+                print("Unexpected error:", sys.exc_info()[0],count)
+             
+    count += 1 #increment the count
