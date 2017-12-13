@@ -1,0 +1,14 @@
+def find_2nd_class(probs):
+    """
+    find the second most probable class and its probability for knn
+    params:
+        probs -- the different probabilities of all classes given a single testing point
+    return:
+        p2 -- the second most probable class
+        sec -- probability for p2
+    """
+    sp = np.sort(probs)
+    sec = sp[0][-2] 
+    pos = np.where(probs==sec)
+    p1,p2 = pos[0][0],pos[1][0]  
+    return p2, round(sec,2)
