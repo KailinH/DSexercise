@@ -1,0 +1,38 @@
+"""
+Given a classification with multiple highly imbalanced classes, resampled the data for a more balanced training set
+"""
+def resampled_data(c3_vc):
+    """
+    a function to automatically resample training data
+    c3_vc: value count of category 3, pandas series from cat3.value_counts()
+    """
+    dominant_classes = []
+    #delete_classes = []
+    c3_vc_list = c3_vc.tolist()
+    c3_vc_dict = c3_vc.to_dict()
+    p90 = int(np.percentile(c3_vc_list,90)) #calculate 90 percentile 
+    for k,v in c3_vc_dict.items():
+        if v > p90:
+            dominant_classes.append(k)
+    return dominant_classes,p90
+    
+ def resample_dominant(data,data_cat):
+    """
+    for c2,c3 category data, resample dominant classes
+    """
+    vc = data_cat.value_counts()
+    dominant_classes, p90 = resampled_data(vc)
+    dominant_classes = [unicode(c) for c in dominant_classes]
+    #non_dominant_data =data_c3[(~data_c3['category3'].isin(dominant_classes))&(~data_c3['category3'].isin(delete_classes))]
+    non_dominant_data =data[~data_cat.isin(dominant_classes)]
+    dc_frames = []
+    for dc in dominant_classes:
+        dc_frames.append(data[data_cat == dc])
+    dominant_sampled = []
+    for dcf in dc_frames:
+        cur = dcf.sample(n=p90)
+        dominant_sampled.append(cur)
+    dominant_sampled = pd.concat(dominant_sampled)
+    data = pd.concat([non_dominant_data,dominant_sampled])
+    data = data.reset_index(drop=True) #reset index
+    return data
