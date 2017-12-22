@@ -1,0 +1,20 @@
+import jieba
+import re
+stop_words = ['。','了','着','吧','哎','嘿','呢','呀','呐','儿','呗','吗','嘛','么','也','啦','来','那个','啊', '哪','的',
+'我','你','是','得','怎么','又',',','!','嗯',' ','？']
+stop_words = [unicode(w,'utf-8') for w in stop_words]
+def content_process(content, stop_words):
+    """
+    preprocess Chinese language
+    params:
+        content:a pandas series of user feedback
+    return: 
+        x_text:tokenized feedback 
+    """
+    x_text = []
+    for x in content:
+        temp = list(jieba.cut(str(x)))
+        temp = [t for t in temp if t not in stop_words]
+        temp = ' '.join(temp)
+        x_text.append(temp)
+    return x_text
