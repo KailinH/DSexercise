@@ -1,0 +1,35 @@
+#precision and recall are importment metrics to measure model performances when we have a multiclass problems with 
+#very imbalance classes, output, below is a function to calcualte these metrics from scratch
+
+def precision_recall_calculation(cats_with_prob,ml_cat_res, gt_cat_res):
+    """
+    Input:
+      cats_with_prob -- list of category name
+      ml_cat_res -- list, machine learning predictions
+      gt_cat_res -- list, ground truth
+    Output:
+      cats_dic -- a dictionary with True Positive, False Positive, False Negative, P, R information of each categories 
+    """
+    cats_dic = {}
+    for cp in cats_with_prob:
+        cats_dic[cp] = {}
+        cats_dic[cp]['tp'] = 0
+        cats_dic[cp]['fn'] = 0
+        cats_dic[cp]['fp'] = 0
+    for t1,t2 in zip(ml_cat_res, gt_cat_res):
+        if str(t1) in cats_with_prob and t1==t2:
+            cats_dic[str(t1)]['tp'] += 1
+        if str(t1) in cats_with_prob and t1 != t2:
+            cats_dic[str(t1)]['fp'] += 1
+        if str(t2) in cats_with_prob and t1 != t2:
+            cats_dic[str(t2)]['fn'] += 1 
+    for k in cats_dic.keys():
+        if (cats_dic[k]['tp']+cats_dic[k]['fp']) != 0:
+            cats_dic[k]['P'] = float(cats_dic[k]['tp'])/(cats_dic[k]['tp']+cats_dic[k]['fp'])
+        else:
+            cats_dic[k]['P'] = 'divide by zero'
+        if (cats_dic[k]['tp'] + cats_dic[k]['fn']) != 0:
+            cats_dic[k]['R'] = float(cats_dic[k]['tp'])/(cats_dic[k]['tp']+cats_dic[k]['fn'])
+        else:
+            cats_dic[k]['R'] = 'divide by zero'
+    return cats_dic
