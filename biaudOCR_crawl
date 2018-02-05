@@ -1,8 +1,13 @@
 ##crawl image information from links using Baidu ocr tool
+APP_ID = your id
+API_KEY = your key
+SECRET_KEY = your ****
+client = AipOcr(APP_ID, API_KEY, SECRET_KEY)
 def retrieve_ocr_through_link(img_names):
   """
-  img_names: a list of image names stored in a local folder
-  
+  Input -- img_names: a list of image names stored in a local folder
+  Output -- OCR outputs
+  """
     ocr_outputs = {}
     image_folder = './Downloads/OCR_test_set'
     for name in img_names:
