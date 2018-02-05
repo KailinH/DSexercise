@@ -1,0 +1,18 @@
+##crawl image information from links using Baidu ocr tool
+def retrieve_ocr_through_link(img_names):
+  """
+  img_names: a list of image names stored in a local folder
+  
+    ocr_outputs = {}
+    image_folder = './Downloads/OCR_test_set'
+    for name in img_names:
+        ind = name.find('_')
+        k = name[:ind]
+        ocr_output = client.basicGeneral(get_file_content(image_folder+'/'+name))
+        if 'words_result' in ocr_output.keys():
+            w_results = ocr_output["words_result"]
+            if k in ocr_outputs:
+                ocr_outputs[k]+= w_results
+            else:
+                ocr_outputs[k] = w_results
+    return ocr_outputs
