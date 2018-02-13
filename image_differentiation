@@ -1,0 +1,23 @@
+"""
+a simple and heuristic way to differentiate screen shot images and pictures, utilizing image histogram and trapezoidal rule
+as screen shots has spikes in histogram and hence smaller area under curve
+"""
+##generate all area under histogram curve for a folder of images
+wdir = '/Users/jdus/Downloads/screenShots'
+screen_auc = []
+for img_name in os.listdir(wdir):
+    if '.jpg' in img_name:
+        img = cv2.imread(wdir+'/'+img_name)
+        h = np.zeros((300,256,3))
+        bins = np.arange(256).reshape(256,1)
+        color = [(255,0,0),(0,255,0),(0,0,255)]
+        auc = []
+        for ch, col in enumerate(color):
+            hist_item = cv2.calcHist([img],[ch],None,[256],[0,255])
+            cv2.normalize(hist_item,hist_item,0,255,cv2.NORM_MINMAX)
+            hist=np.int32(np.around(hist_item))
+            pts = np.column_stack((bins,hist))# stack by column
+            cv2.polylines(h,[pts],False,col) #draw polygon
+            auc.append(np.trapz(pts[:,1])) 
+        #h=np.flipud(h) #flip array in the updown direction
+        screen_auc.append(np.mean(auc))
